@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <h1>Weather Dashboard</h1>
+            <p>Check the weather in your city</p>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="search-section">
+           <h2>Find Weather</h2>
+           <p>Enter a city name to check the weather.</p>
+           
+           <form id="searchForm">
+             <input
+               type="text"
+               id="cityInput"
+               placeholder="Enter city name"
+               aria-labeel="city name"
+               required
+             >
+
+             <button type="submit" id="searchButton">
+                Search
+             </button>
+           </form>
+
+           <p id="message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="weatherSection" class="hidden">
+
+            <div class="weather-card">
+                <h2 id="cityName">City Name</h2>
+                <p id="weatherData"></p>
+
+                <div class="main-weather">
+                    <div>
+                        <span id="weatherIcon">☀️</span>
+                        <h3 id="temperature">--°C</h3>
+                    </div>
+
+                    <p id="weatherDescription">
+                        Weather consition
+                    </p>
+                </div>
+
+                <div class="weather-details">
+
+                    <div class=detail-box">
+                        <h3>Hmidity</h3>
+                        <p id="humidity">--%</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Wind Speed
+                        <p id="windSpeed">-- km/h</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Feels Like</h3>
+                        <p id="feelsLike">--°C</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="forecast-section">
+                <h2>7-Day Weather Forecast</h2>
+
+                <div class="filter-section">
+                <label for="weatherFilter">Filter forecast:</label>
+
+                <select id="weatherFilter">
+                    <option value="all">All Days</option>
+                    <option value="sunny">Sunny / Clear</option>
+                    <option value="cloudy">Cloudy</option>
+                    <option value="rainy">Rainy</option>
+                    <option value="snowy">Snowy</option>
+                </select>
+            </div>
+
+            <div id="forecastContainer" class="forecast-grid"></div>
+
+            <p id="filterMessage"></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Weather Dashboard | Web Infrastructure Project</p>
+        <p>
+            Weather data provided by
+            <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+        </p>
+    </footer>
+</body>
+
+</html>
