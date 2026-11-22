@@ -1,3 +1,4 @@
+
 const searchForm = document.getElementById("searchForm");
 const cityInput = document.getElementById("cityInput");
 const searchButton = document.getElementById("searchButton");
@@ -17,7 +18,7 @@ function getWeatherInfo(code) {
     }
 
     if (code === 1 || code === 2) {
-        return { text:"Party Cloudy", icon: "🌤️", type: "cloudy" };
+        return { text: "Partly Cloudy", icon: "🌤️", type: "cloudy" };
     }
 
     if (code === 3) {
@@ -25,9 +26,7 @@ function getWeatherInfo(code) {
     }
 
     if (code === 45 || code === 48) {
-        return {
-            text: "Foggy", icon: "🌫️", type: "cloudy"
-        };
+        return { text: "Foggy", icon: "🌫️", type: "cloudy" };
     }
 
     if ([51, 53, 55, 56, 57].includes(code)) {
@@ -43,14 +42,14 @@ function getWeatherInfo(code) {
     }
 
     if ([95, 96, 99].includes(code)) {
-        return { text: "Thunderstorm", icon: "⛈️" type: "rainy" };
+        return { text: "Thunderstorm", icon: "⛈️", type: "rainy" };
     }
 
     return { text: "Unknown", icon: "🌍", type: "other" };
 }
 
 // Display messages to the user
-function showMessages(text, type) {
+function showMessage(text, type) {
     message.textContent = text;
     message.className = type;
 }
@@ -58,8 +57,8 @@ function showMessages(text, type) {
 // Find the coordinates of a city
 async function getCity(city) {
     const url = "https://geocoding-api.open-meteo.com/v1/search"
-    + "?name=" + encodeURIComponent(city)
-    + "&count=1&language=en&format=json";
+        + "?name=" + encodeURIComponent(city)
+        + "&count=1&language=en&format=json";
 
     const response = await fetch(url);
 
@@ -78,13 +77,13 @@ async function getCity(city) {
 
 // Get weather information using coordinates
 async function getWeather(latitude, longitude) {
-    const url = "https://api.open-meteo.com/v1/forest"
-    + "?latitude=" + latitude
-    + "&longitude=" + longitude
-    + "&current=temperature_2m, relative_humidity_2m,"
-    + "apparent_temperature, weather_code, wind_speed_10m"
-    + "&daily=weather_code, temperature_2m_max, temperature_2m_min"
-    + "&timezone=auto&forecast_days=7";
+    const url = "https://api.open-meteo.com/v1/forecast"
+        + "?latitude=" + latitude
+        + "&longitude=" + longitude
+        + "&current=temperature_2m,relative_humidity_2m,"
+        + "apparent_temperature,weather_code,wind_speed_10m"
+        + "&daily=weather_code,temperature_2m_max,temperature_2m_min"
+        + "&timezone=auto&forecast_days=7";
 
     const response = await fetch(url);
 
@@ -95,7 +94,7 @@ async function getWeather(latitude, longitude) {
     const data = await response.json();
 
     if (!data.current || !data.daily) {
-        throw new Error("Weather inforamation is not available.");
+        throw new Error("Weather information is not available.");
     }
 
     return data;
@@ -108,8 +107,8 @@ function displayWeather(city, data) {
 
     let location = city.name;
 
-    if (city.country) {
-        location += ", " + city.admin;
+    if (city.admin1) {
+        location += ", " + city.admin1;
     }
 
     if (city.country) {
@@ -118,34 +117,34 @@ function displayWeather(city, data) {
 
     document.getElementById("cityName").textContent = location;
 
-    const date = new Data(current.time);
+    const date = new Date(current.time);
 
     document.getElementById("weatherDate").textContent =
-    date.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        timezone: "UTC"
-    });
+        date.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            timeZone: "UTC"
+        });
 
     document.getElementById("temperature").textContent =
-    Math.round(current.temperature_2m) + "°C";
+        Math.round(current.temperature_2m) + "°C";
 
     document.getElementById("humidity").textContent =
-    current.relative_humidity_2m + "%";
+        current.relative_humidity_2m + "%";
 
-    document.getElementById("windSpeed").textContent = 
-    current.wind_speed_10m + "km/h";
+    document.getElementById("windSpeed").textContent =
+        current.wind_speed_10m + " km/h";
 
-    document.getElementById("feelsLike").textContent = 
-    Math.round(current.apparent_temperature) + "°C";
+    document.getElementById("feelsLike").textContent =
+        Math.round(current.apparent_temperature) + "°C";
 
-    document.getElementById("weatherDescription").textContent = 
-    weather.text;
+    document.getElementById("weatherDescription").textContent =
+        weather.text;
 
-    document.getElementById("weatherIcon").textContent = 
-    weather.icon;
+    document.getElementById("weatherIcon").textContent =
+        weather.icon;
 
     weatherSection.classList.remove("hidden");
 }
@@ -162,7 +161,7 @@ function displayForecast(filter = "all") {
     const daily = forecastData.daily;
     let daysFound = 0;
 
-    for (let ! = 0, i < daily.time.length; i++) {
+    for (let i = 0; i < daily.time.length; i++) {
         const weather = getWeatherInfo(daily.weather_code[i]);
 
         if (filter !== "all" && weather.type !== filter) {
@@ -177,7 +176,7 @@ function displayForecast(filter = "all") {
             weekday: "short",
             month: "short",
             day: "numeric",
-            timezone: "UTC"
+            timeZone: "UTC"
         });
 
         const maxTemp = Math.round(daily.temperature_2m_max[i]);
@@ -213,8 +212,8 @@ function displayForecast(filter = "all") {
     }
 
     if (daysFound === 0) {
-        filterMessage.textContent = 
-          "No forecast days match this weather condtion.";
+        filterMessage.textContent =
+            "No forecast days match this weather condition.";
     }
 }
 
@@ -222,17 +221,19 @@ function displayForecast(filter = "all") {
 searchForm.addEventListener("submit", async function(event) {
     event.preventDefault();
 
-    const cityName = cityInput.ariaValueMax.trim();
+    const cityName = cityInput.value.trim();
 
     if (cityName === "") {
-       showMessages("Please enter a city name.", "error");
-       return;
+        showMessage("Please enter a city name.", "error");
+        return;
     }
 
     searchButton.disabled = true;
     searchButton.textContent = "Searching...";
 
-    showMessages("Loading weather information...", "loading");
+    showMessage("Loading weather information...", "loading");
+
+    weatherSection.classList.add("hidden");
     forecastData = null;
 
     try {
@@ -240,7 +241,7 @@ searchForm.addEventListener("submit", async function(event) {
 
         const data = await getWeather(
             city.latitude,
-            city.longotude
+            city.longitude
         );
 
         forecastData = data;
@@ -250,10 +251,10 @@ searchForm.addEventListener("submit", async function(event) {
         weatherFilter.value = "all";
         displayForecast();
 
-        showMessages("Weather inforamtion loaded successfully!", "success");
+        showMessage("Weather information loaded successfully!", "success");
 
     } catch (error) {
-        showMessages(error.message, "error");
+        showMessage(error.message, "error");
 
     } finally {
         searchButton.disabled = false;
@@ -261,7 +262,7 @@ searchForm.addEventListener("submit", async function(event) {
     }
 });
 
-// Filter the forecast when the selection changes 
+// Filter the forecast when the selection changes
 weatherFilter.addEventListener("change", function() {
     displayForecast(weatherFilter.value);
 });
