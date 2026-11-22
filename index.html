@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,31 +22,31 @@
     <main class="container">
 
         <section class="search-section">
-           <h2>Find Weather</h2>
-           <p>Enter a city name to check the weather.</p>
-           
-           <form id="searchForm">
-             <input
-               type="text"
-               id="cityInput"
-               placeholder="Enter city name"
-               aria-labeel="city name"
-               required
-             >
+            <h2>Find Weather</h2>
+            <p>Enter a city name to check the weather.</p>
 
-             <button type="submit" id="searchButton">
-                Search
-             </button>
-           </form>
+            <form id="searchForm">
+                <input
+                    type="text"
+                    id="cityInput"
+                    placeholder="Enter city name"
+                    aria-label="City name"
+                    required
+                >
 
-           <p id="message" role="status" aria-live="polite"></p>
+                <button type="submit" id="searchButton">
+                    Search
+                </button>
+            </form>
+
+            <p id="message" role="status" aria-live="polite"></p>
         </section>
 
         <section id="weatherSection" class="hidden">
 
             <div class="weather-card">
                 <h2 id="cityName">City Name</h2>
-                <p id="weatherData"></p>
+                <p id="weatherDate"></p>
 
                 <div class="main-weather">
                     <div>
@@ -54,19 +55,19 @@
                     </div>
 
                     <p id="weatherDescription">
-                        Weather consition
+                        Weather condition
                     </p>
                 </div>
 
                 <div class="weather-details">
 
-                    <div class=detail-box">
-                        <h3>Hmidity</h3>
+                    <div class="detail-box">
+                        <h3>Humidity</h3>
                         <p id="humidity">--%</p>
                     </div>
 
                     <div class="detail-box">
-                        <h3>Wind Speed
+                        <h3>Wind Speed</h3>
                         <p id="windSpeed">-- km/h</p>
                     </div>
 
@@ -82,31 +83,38 @@
                 <h2>7-Day Weather Forecast</h2>
 
                 <div class="filter-section">
-                <label for="weatherFilter">Filter forecast:</label>
+                    <label for="weatherFilter">
+                        Filter forecast:
+                    </label>
 
-                <select id="weatherFilter">
-                    <option value="all">All Days</option>
-                    <option value="sunny">Sunny / Clear</option>
-                    <option value="cloudy">Cloudy</option>
-                    <option value="rainy">Rainy</option>
-                    <option value="snowy">Snowy</option>
-                </select>
+                    <select id="weatherFilter">
+                        <option value="all">All Days</option>
+                        <option value="sunny">Sunny / Clear</option>
+                        <option value="cloudy">Cloudy</option>
+                        <option value="rainy">Rainy</option>
+                        <option value="snowy">Snowy</option>
+                    </select>
+                </div>
+
+                <div id="forecastContainer" class="forecast-grid">
+                </div>
+
+                <p id="filterMessage"></p>
             </div>
 
-            <div id="forecastContainer" class="forecast-grid"></div>
-
-            <p id="filterMessage"></p>
-            </div>
         </section>
+
     </main>
 
     <footer>
         <p>Weather Dashboard | Web Infrastructure Project</p>
         <p>
             Weather data provided by
-            <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+            <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+                Open-Meteo
+            </a>
         </p>
     </footer>
-</body>
 
+</body>
 </html>
