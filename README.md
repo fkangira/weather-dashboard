@@ -14,7 +14,9 @@ The main objective of this project is to demonstrate my understanding of web dev
 ## Project Links
 
 - GitHub Repository: https://github.com/fkangira/weather-dashboard
-- Deployed Application: http://3.8.101.245:8080
+- Deployed Application: https://fanuelkangira.tech
+- Alternative HTTPS Address: https://www.fanuelkangira.tech
+- Original Load Balancer URL: http://3.8.101.245:8080
 - Video Demonstration: https://youtu.be/VvYf9OWLsIk
 
 ## Features
@@ -44,7 +46,10 @@ The main objective of this project is to demonstrate my understanding of web dev
 | sessionStorage | Temporary weather data caching |
 | Ubuntu | Server operating system |
 | Nginx | Web server |
-| HAProxy | Load balancing |
+| HAProxy | Load balancing and HTTPS termination |
+| DNS | Connecting the custom domain to the load balancer |
+| Let's Encrypt | SSL/TLS certificates |
+| Certbot | Certificate issuance and renewal |
 | Git | Version control |
 | GitHub | Source code management |
 
@@ -182,43 +187,49 @@ An internet connection is required to retrieve weather information from Open-Met
 
 ## Deployment
 
-The application was deployed using two Ubuntu web servers and one HAProxy load balancer provided through the ALU sandbox environment.
+The application was deployed using two Ubuntu web servers and one HAProxy load balancer provided through the ALU sandbox environment. I also connected my existing domain and configured HTTPS.
 
 ### Server Infrastructure
 
-| Server | Technology | Purpose |
-|---|---|---|
-| Web01 | Ubuntu and Nginx | Hosts the application |
-| Web02 | Ubuntu and Nginx | Hosts the application |
-| LB01 | HAProxy | Distributes incoming requests |
+| Server | IP address | Technology | Purpose |
+|---|---|---|---|
+| Web01 | 18.133.239.146 | Ubuntu and Nginx | Hosts the application on port 8080 |
+| Web02 | 35.177.254.240 | Ubuntu and Nginx | Hosts the application on port 8080 |
+| LB01 | 3.8.101.245 | HAProxy | Handles HTTPS and distributes requests |
 
 ### Deployment Architecture
 
 ```text
-                User's Browser
-                      |
-                      v
-               LB01 (HAProxy)
-                      |
-              +-------+-------+
-              |               |
-              v               v
+               User's Browser
+                     |
+             HTTPS (Port 443)
+                     |
+           fanuelkangira.tech
+                     |
+                     v
+              LB01 (HAProxy)
+               3.8.101.245
+                     |
+               Round robin
+             +-------+-------+
+             |               |
+        HTTP :8080      HTTP :8080
+             |               |
+             v               v
            Web01            Web02
            Nginx            Nginx
-              |               |
-              v               v
+             |               |
+             v               v
        Weather Dashboard  Weather Dashboard
 ```
 
-The user's browser sends HTTP requests to the HAProxy load balancer. HAProxy forwards these requests to one of the two Nginx web servers.
-
-Both web servers host the same application files.
+HAProxy accepts the public HTTPS connection and forwards requests to one of the two Nginx web servers using round-robin load balancing. Both web servers host the same application files.
 
 The browser communicates directly with the Open-Meteo API to retrieve weather information.
 
 ### Web Server Configuration
 
-Nginx is used to serve the application's static files on both Web01 and Web02.
+Nginx serves the application's static files on both Web01 and Web02.
 
 Application directory:
 
@@ -226,17 +237,73 @@ Application directory:
 /var/www/weather-dashboard/
 ```
 
-The application is served on port 8080.
+Each web server serves the application on port 8080.
 
-### Load Balancer
+### Custom Domain and DNS
 
-HAProxy distributes incoming HTTP requests between Web01 and Web02.
+I configured my existing domain, `fanuelkangira.tech`, to point to the load balancer. Both the root domain and the `www` subdomain resolve to `3.8.101.245`.
 
-Using two web servers helps distribute traffic and improves application availability when one server becomes unavailable and the load balancer correctly detects the failure.
+- Main website: https://fanuelkangira.tech
+- Alternative website: https://www.fanuelkangira.tech
+- Original load balancer endpoint: http://3.8.101.245:8080
 
-The application can be accessed through:
+The public A records for `web-01`, `web-02`, and `lb-01` also identify the corresponding servers.
 
-http://3.8.101.245:8080
+### HTTPS Configuration
+
+I used Let's Encrypt and Certbot to issue a certificate for both `fanuelkangira.tech` and `www.fanuelkangira.tech`. HAProxy uses the certificate to handle HTTPS connections on port 443. Requests sent to HTTP port 80 are redirected to HTTPS with status code 301.
+
+The current certificate expires on **23 February 2027**.
+
+### Automatic Certificate Renewal
+
+Certbot has an active systemd timer to check certificate renewal. HAProxy forwards Let's Encrypt HTTP-01 verification requests to Certbot on localhost port 8888, so validation can run without stopping HAProxy.
+
+After a successful renewal, a deployment hook updates HAProxy's certificate file and reloads HAProxy after checking the configuration. I tested the deployment hook manually and confirmed HAProxy remained active. I also ran:
+
+```bash
+sudo certbot renew --dry-run
+```
+
+The simulation successfully verified both domains. Certbot intentionally skipped the deployment hook during the dry run, so a future live renewal is not yet tested end to end.
+
+### Load Balancer Verification
+
+I tested HAProxy by sending six consecutive requests:
+
+```bash
+for i in {1..6}; do
+    curl -sI https://fanuelkangira.tech | grep -i X-Served-By
+done
+```
+
+The results alternated between the two servers:
+
+```text
+X-Served-By: 7204-web-01
+X-Served-By: 7204-web-02
+X-Served-By: 7204-web-01
+X-Served-By: 7204-web-02
+X-Served-By: 7204-web-01
+X-Served-By: 7204-web-02
+```
+
+Each server handled three of the six requests. Both HTTPS domains also returned `HTTP 200 OK`. An HTTP request to the root domain returned `301 Moved Permanently`, redirecting to HTTPS.
+
+### Infrastructure Test Results
+
+| Test | Result |
+|---|---|
+| Root domain DNS points to LB01 | Passed |
+| www domain DNS points to LB01 | Passed |
+| HTTPS on both domains | Passed |
+| HTTP to HTTPS redirection | Passed |
+| HAProxy configuration validation | Passed |
+| Round-robin load balancing | Passed — 3 requests per server |
+| Manual certificate deployment hook | Passed |
+| Certificate renewal dry run | Passed |
+
+These tests were completed on **25 November 2026**. They verify the infrastructure but do not replace browser testing of all application features.
 
 ## Testing the Application
 
@@ -250,8 +317,8 @@ The following steps can be used to test the application:
 6. Search for an invalid city and check the error message.
 7. Repeat a city search to check caching behaviour.
 8. Check the layout on different screen sizes.
-9. Access the deployed application through HAProxy.
-10. Check the responses from both web servers.
+9. Access the deployed application through HTTPS.
+10. Check the responses from both web servers using the `X-Served-By` header.
 
 ## Video Demonstration
 
@@ -265,7 +332,7 @@ Watch the video on YouTube:
 
 During this project, I gained practical experience working with external APIs, handling errors, managing application files, and configuring Linux servers.
 
-I also learned how Nginx serves web applications and how HAProxy distributes requests between multiple servers.
+I also learned how Nginx serves web applications and how HAProxy distributes requests between multiple servers. I learned how DNS connects a custom domain to a server, how HTTPS protects connections, and how Certbot and Let's Encrypt manage SSL certificates.
 
 This project helped me understand how frontend development and web infrastructure work together to make an application accessible to users.
 
@@ -274,6 +341,7 @@ This project helped me understand how frontend development and web infrastructur
 - African Leadership University
 - Open-Meteo for providing weather data and API services.
 - Nginx and HAProxy for web hosting and load balancing.
+- Let's Encrypt and Certbot for SSL certificate management.
 - Git and GitHub for version control and source code management.
 
 ## Author
